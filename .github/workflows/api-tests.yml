@@ -28,11 +28,33 @@ jobs:
     - name: Install Bruno CLI
       run: npm install -g @usebruno/cli
     
+    - name: Start API server
+      run: |
+        npm start &
+        echo $! > server.pid
+      env:
+        PORT: 3000
+        NODE_ENV: test
+    
+    - name: Wait for server to be ready
+      run: |
+        echo "Waiting for server to start..."
+        timeout 30 bash -c 'until curl -f http://localhost:3000 > /dev/null 2>&1; do sleep 1; done'
+        echo "Server is ready!"
+    
     - name: Run API Tests with Development Environment
       run: |
         cd bruno-api-collection
-        bru run --env development --reporter-html results.html
+        bru run --env development --sandbox=developer --reporter-html results.html
       continue-on-error: false
+    
+    - name: Stop API server
+      if: always()
+      run: |
+        if [ -f server.pid ]; then
+          kill $(cat server.pid) || true
+          rm server.pid
+        fi
     
     - name: Upload Test Results
       uses: actions/upload-artifact@v4
