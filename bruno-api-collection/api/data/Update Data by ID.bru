@@ -1,0 +1,85 @@
+meta {
+  name: Update Data by ID
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/data/{{lastCreatedId}}
+  body: json
+  auth: none
+}
+
+headers {
+  content-type: application/json
+  accept: application/json
+}
+
+body:json {
+  {
+    "name": "Updated Item",
+    "description": "This item has been updated via Bruno",
+    "value": 200,
+    "category": "updated",
+    "status": "active"
+  }
+}
+
+script:pre-request {
+  // Use the ID from the last created item, or use a default test ID
+  const itemId = bru.getVar("lastCreatedId") || "1234567890";
+  bru.setVar("updateId", itemId);
+  
+  // Update the URL with the actual ID
+  const baseUrl = bru.getEnvVar("baseUrl");
+  req.setUrl(`${baseUrl}/api/data/${itemId}`);
+}
+
+tests {
+  test("Status code is 200 (OK)", function() {
+    expect(res.status).to.equal(200);
+  });
+  
+  test("Response has success property", function() {
+    expect(res.body).to.have.property("success");
+    expect(res.body.success).to.be.true;
+  });
+  
+  test("Response has message property", function() {
+    expect(res.body).to.have.property("message");
+    expect(res.body.message).to.equal("Data updated successfully");
+  });
+  
+  test("Response has data property", function() {
+    expect(res.body).to.have.property("data");
+    expect(res.body.data).to.be.an("object");
+  });
+  
+  test("Updated item has id", function() {
+    expect(res.body.data).to.have.property("id");
+    expect(res.body.data.id).to.be.a("string");
+  });
+  
+  test("Updated item has updatedAt timestamp", function() {
+    expect(res.body.data).to.have.property("updatedAt");
+    expect(res.body.data.updatedAt).to.be.a("string");
+  });
+  
+  test("Updated item contains new data", function() {
+    expect(res.body.data).to.have.property("name");
+    expect(res.body.data.name).to.equal("Updated Item");
+    expect(res.body.data).to.have.property("description");
+    expect(res.body.data.description).to.include("updated");
+  });
+  
+  test("ID is preserved after update", function() {
+    const updateId = bru.getVar("updateId");
+    if (updateId) {
+      expect(res.body.data.id).to.equal(updateId);
+    }
+  });
+  
+  test("Response time is acceptable", function() {
+    expect(res.responseTime).to.be.below(1000);
+  });
+}

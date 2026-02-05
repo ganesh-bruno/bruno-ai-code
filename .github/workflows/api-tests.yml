@@ -1,0 +1,54 @@
+name: API Tests
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm install
+      if: hashFiles('package.json') != ''
+    
+    - name: Install Bruno CLI
+      run: npm install -g @usebruno/cli
+    
+    - name: Run API Tests with Development Environment
+      run: |
+        cd bruno-api-collection
+        bru run --env development --reporter-html results.html
+      continue-on-error: false
+    
+    - name: Upload Test Results
+      uses: actions/upload-artifact@v4
+      with:
+        name: api-test-results
+        path: bruno-api-collection/results.html
+        retention-days: 30
+    
+    - name: Display Test Summary
+      if: always()
+      run: |
+        if [ -f bruno-api-collection/results.html ]; then
+          echo "✅ Test results generated successfully"
+          echo "📊 Results file: bruno-api-collection/results.html"
+        else
+          echo "❌ Test results file not found"
+          exit 1
+        fi
+

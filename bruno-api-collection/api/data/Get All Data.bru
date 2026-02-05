@@ -1,0 +1,46 @@
+meta {
+  name: Get All Data
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/data
+  body: none
+  auth: none
+}
+
+headers {
+  content-type: application/json
+  accept: application/json
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Response has success property", function() {
+    expect(res.body).to.have.property("success");
+    expect(res.body.success).to.be.true;
+  });
+
+  test("Response has message property", function() {
+    expect(res.body).to.have.property("message");
+    expect(res.body.message).to.be.a("string");
+  });
+
+  test("Response has data property", function() {
+    expect(res.body).to.have.property("data");
+    expect(res.body.data).to.be.an("array");
+  });
+
+  test("Response time is acceptable", function() {
+    expect(res.responseTime).to.be.below(1000);
+  });
+
+  test("Content-Type is application/json", function() {
+    expect(res.getHeader("content-type")).to.include("application/json");
+  });
+}
+

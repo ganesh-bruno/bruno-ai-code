@@ -1,0 +1,43 @@
+meta {
+  name: Create Data - Empty Body
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/api/data
+  body: json
+  auth: none
+}
+
+headers {
+  content-type: application/json
+  accept: application/json
+}
+
+body:json {
+  {
+  }
+}
+
+tests {
+  test("Status code is 201 (Created) - empty body is valid", function() {
+    expect(res.status).to.equal(201);
+  });
+
+  test("Response has success property", function() {
+    expect(res.body).to.have.property("success");
+    expect(res.body.success).to.be.true;
+  });
+
+  test("Created item has id", function() {
+    expect(res.body.data).to.have.property("id");
+    expect(res.body.data.id).to.be.a("string");
+  });
+
+  test("Created item has createdAt timestamp", function() {
+    expect(res.body.data).to.have.property("createdAt");
+    expect(res.body.data.createdAt).to.be.a("string");
+  });
+}
+

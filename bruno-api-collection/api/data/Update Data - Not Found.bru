@@ -1,0 +1,44 @@
+meta {
+  name: Update Data - Not Found
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/data/non-existent-id-12345
+  body: json
+  auth: none
+}
+
+headers {
+  content-type: application/json
+  accept: application/json
+}
+
+body:json {
+  {
+    "name": "This should fail",
+    "value": 999
+  }
+}
+
+tests {
+  test("Status code is 404 (Not Found)", function() {
+    expect(res.status).to.equal(404);
+  });
+
+  test("Response has success property set to false", function() {
+    expect(res.body).to.have.property("success");
+    expect(res.body.success).to.be.false;
+  });
+
+  test("Response has error message", function() {
+    expect(res.body).to.have.property("message");
+    expect(res.body.message).to.equal("Item not found");
+  });
+
+  test("Response time is acceptable", function() {
+    expect(res.responseTime).to.be.below(1000);
+  });
+}
+

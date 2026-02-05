@@ -1,0 +1,80 @@
+meta {
+  name: Create Data
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/data
+  body: json
+  auth: none
+}
+
+headers {
+  content-type: application/json
+  accept: application/json
+}
+
+body:json {
+  {
+    "name": "Sample Item",
+    "description": "This is a sample item created via Bruno",
+    "value": 100,
+    "category": "test"
+  }
+}
+
+script:pre-request {
+  // Generate dynamic test data
+  bru.setVar("timestamp", Date.now());
+  bru.setVar("randomValue", Math.floor(Math.random() * 1000));
+}
+
+tests {
+  test("Status code is 201 (Created)", function() {
+    expect(res.status).to.equal(201);
+  });
+
+  test("Response has success property", function() {
+    expect(res.body).to.have.property("success");
+    expect(res.body.success).to.be.true;
+  });
+
+  test("Response has message property", function() {
+    expect(res.body).to.have.property("message");
+    expect(res.body.message).to.equal("Data created successfully");
+  });
+
+  test("Response has data property", function() {
+    expect(res.body).to.have.property("data");
+    expect(res.body.data).to.be.an("object");
+  });
+
+  test("Created item has id", function() {
+    expect(res.body.data).to.have.property("id");
+    expect(res.body.data.id).to.be.a("string");
+  });
+
+  test("Created item has createdAt timestamp", function() {
+    expect(res.body.data).to.have.property("createdAt");
+    expect(res.body.data.createdAt).to.be.a("string");
+  });
+
+  test("Created item contains request data", function() {
+    expect(res.body.data).to.have.property("name");
+    expect(res.body.data.name).to.equal("Sample Item");
+    expect(res.body.data).to.have.property("description");
+    expect(res.body.data).to.have.property("value");
+  });
+
+  test("Response time is acceptable", function() {
+    expect(res.responseTime).to.be.below(1000);
+  });
+
+  test("Store created item ID for next request", function() {
+    if (res.body.data && res.body.data.id) {
+      bru.setVar("lastCreatedId", res.body.data.id);
+    }
+  });
+}
+

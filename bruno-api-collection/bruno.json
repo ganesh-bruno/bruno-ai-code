@@ -1,0 +1,22 @@
+{
+  "version": "1",
+  "name": "bruno-api-collection",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git",
+    "*.log",
+    ".DS_Store"
+  ],
+  "scripts": {
+    "moduleWhitelist": [
+      "fs",
+      "path",
+      "crypto"
+    ],
+    "filesystemAccess": {
+      "allow": true
+    }
+  }
+}
+
